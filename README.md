@@ -16,9 +16,12 @@ const hides = [
 2. Create new script in Tampermonkey
 3. Replace script contents with `index.js` contents
 
+Supports both horizontal and vertical modes, but refresh your page if you want to toggle
+
 ## Caveats
 
 - Does not support switching timeslots
+- Does not support NUSMods built-in export features, because my implementation is just a visual change
 
 ## Devs
 
