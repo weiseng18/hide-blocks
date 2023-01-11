@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Hide certain blocks
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  try to take over the world!
 // @author       You
 // @match        https://nusmods.com/timetable/*
@@ -11,12 +11,12 @@
 (function() {
   'use strict';
   const hides = [
-    'CS2100-LEC',
-    'CS2100-REC',
-    'CS2100-TUT',
-    'CS2040S-LEC',
-    'CS2040S-TUT',
+    'CS2040-LEC',
+    'CS2040-TUT',
+    'CS3230-LEC',
   ]
+
+  let isVertical;
 
   /**
    * Toggle visibility of items in hides array.
@@ -49,7 +49,7 @@
     return document.getElementsByClassName("timetable")[0].children[1].children[x].children[1]
   }
 
-  function mergeDay(x) {
+  function mergeDayHorz(x) {
     const dayTimetable = getDay(x)
     const width = window.getComputedStyle(dayTimetable).width
     dayTimetable.style.position = "relative"
@@ -79,12 +79,56 @@
     })
   }
 
+  function mergeDayVert(x) {
+    const dayTimetable = getDay(x)
+    const height = window.getComputedStyle(dayTimetable).height
+    dayTimetable.style.position = "relative"
+
+    // For vertical mode, the width of 5 days is fixed
+    const all = document.getElementsByClassName("timetable")[0].children[1];
+    const width = window.getComputedStyle(all).width.slice(0, -2);
+
+    // Overlay the DIVs
+    const cols = Array.prototype.slice.call(dayTimetable.children).slice(1)
+
+    cols.forEach((c) => {
+      c.style.position = "absolute"
+      c.style.height = height
+      c.style.top = 0
+      c.style.left = 0
+    })
+
+    // Set parent DIV to 1/5 of the total width
+    dayTimetable.style.minWidth = width/5 + "px"
+
+    // Set children of each DIV to max width
+    cols.forEach((c) => {
+      c.children.forEach((block) => {
+        block.style.minWidth = width/5 + "px"
+      })
+    })
+  }
+
+  /**
+   * Check if horizontal or vertical mode
+   */
+  function checkMode() {
+    isVertical = document.getElementsByClassName("main-content")[0]
+    .children[0].classList.contains("verticalMode");
+  }
+
   function main() {
+    // check horizontal or vertical mode
+    checkMode()
     // hide some blocks
     toggleVisbility()
     // collapse multiple rows into one
-    for (let i=0; i<=4; i++)
-      mergeDay(i)
+    for (let i=0; i<=4; i++) {
+      if (isVertical)
+        mergeDayVert(i)
+      else
+        mergeDayHorz(i)
+    }
   }
 
   window.onload = function() {
